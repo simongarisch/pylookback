@@ -1,6 +1,6 @@
-from numbers import Real
 from weakref import WeakSet
 from abc import ABC, abstractmethod
+from .descriptors import String, UnsignedReal, StringOfFixedSize
 
 
 class Asset(ABC):
@@ -16,6 +16,11 @@ class Asset(ABC):
     """
     _instances = WeakSet()
 
+    # descriptors
+    _code = String("_code")
+    _currency_code = StringOfFixedSize("_currency_code", size=3)
+    price = UnsignedReal("price")
+
     @classmethod
     def _register_asset(cls, asset):
         cls._instances.add(asset)
@@ -26,8 +31,6 @@ class Asset(ABC):
 
     def _validate_code(self, code):
         """ Every asset must have a unique string code. """
-        if not isinstance(code, str):
-            raise TypeError("expected string for asset code")
         if code in self.registered_codes():
             raise ValueError("Code %s is already in use" % code)
         self._code = code
@@ -35,17 +38,6 @@ class Asset(ABC):
 
     def __init__(self, code, price, currency_code):
         self._validate_code(code)
-
-        if not isinstance(price, Real):
-            raise TypeError("expected numeric price")
-        if price < 0:
-            raise ValueError("price must be >= 0")
-
-        if not isinstance(currency_code, str):
-            raise TypeError("expected string for currency code")
-        if len(currency_code) != 3:
-            raise ValueError("currency codes should be 3 characters long")
-        self._code = code
         self._currency_code = currency_code
         self._local_value = None
         self.price = price
