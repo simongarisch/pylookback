@@ -33,7 +33,7 @@ class Asset(ABC):
         self._code = code
         self._register_asset(self)
 
-    def __init__(self, code, price, currency_code="USD"):
+    def __init__(self, code, price, currency_code):
         self._validate_code(code)
 
         if not isinstance(price, Real):

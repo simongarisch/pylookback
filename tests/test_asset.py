@@ -3,7 +3,7 @@ from pylookback import Asset, Stock
 
 
 def test_init():
-    asset = Stock("AAA US", 2.50)
+    asset = Stock("AAA US", 2.50, "USD")
     assert asset.code == "AAA US"
     assert asset.price == 2.50
     assert asset.local_value is None
@@ -16,7 +16,7 @@ def test_code_is_string():
 
 def test_price_is_numeric():
     with pytest.raises(TypeError):
-        Stock("BBB US", "2.50")
+        Stock("BBB US", "2.50", "USD")
 
 
 def test_currency_code():
