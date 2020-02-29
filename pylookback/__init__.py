@@ -1,1 +1,1 @@
-from .assets import Asset  # noqa: F401
+from .assets import Asset, Stock  # noqa: F401
