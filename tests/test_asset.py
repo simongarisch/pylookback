@@ -17,6 +17,8 @@ def test_code_is_string():
 def test_price_is_numeric():
     with pytest.raises(TypeError):
         Stock("BBB US", "2.50", "USD")
+    with pytest.raises(ValueError):
+        Stock("BBB US", -2.50, "USD")
 
 
 def test_currency_code():
