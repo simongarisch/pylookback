@@ -1,6 +1,6 @@
 from weakref import WeakSet
 from abc import ABC, abstractmethod
-from .descriptors import String, UnsignedReal, StringOfFixedSize
+from ..descriptors import String, UnsignedReal, StringOfFixedSize
 
 
 class Asset(ABC):
@@ -58,11 +58,3 @@ class Asset(ABC):
     def revalue(self):
         """ Each concrete asset must define its own revalue method. """
         raise NotImplementedError()
-
-
-class Stock(Asset):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def revalue(self):
-        pass
