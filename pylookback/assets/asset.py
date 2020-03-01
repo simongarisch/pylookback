@@ -19,7 +19,7 @@ class Asset(ABC):
     # descriptors
     _code = String("_code")
     _currency_code = StringOfFixedSize("_currency_code", size=3)
-    price = UnsignedReal("price")
+    _price = UnsignedReal("_price")
 
     @classmethod
     def _register_asset(cls, asset):
@@ -39,9 +39,9 @@ class Asset(ABC):
     def __init__(self, code, price, currency_code):
         self._validate_code(code)
         self._currency_code = currency_code
-        self._local_value = None
         self.price = price
 
+    # code, currency_code and local value can be read but not set
     @property
     def code(self):
         return self._code
@@ -53,6 +53,17 @@ class Asset(ABC):
     @property
     def local_value(self):
         return self._local_value
+
+    # changes in price will trigger the abstract method 'revalue'
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, price):
+        """ Call the revalue method when price changes. """
+        self._price = price
+        self.revalue()
 
     @abstractmethod
     def revalue(self):
