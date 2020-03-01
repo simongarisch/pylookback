@@ -22,3 +22,14 @@ def test_fx_currency_pair_read_only():
     fx = FxRate("AUDUSD", 0.65)
     with pytest.raises(AttributeError):
         fx.currency_pair = "AUDAUD"
+
+
+def test_fx_rate_get():
+    with pytest.raises(ValueError):
+        FxRate.get("AUDUSD")  # not available
+
+    fx = FxRate("AUDUSD", 0.65)
+    assert FxRate.get("AUDUSD") == 0.65
+
+    fx.rate = 0.75
+    assert FxRate.get("AUDUSD") == 0.75
