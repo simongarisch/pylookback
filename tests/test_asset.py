@@ -6,7 +6,7 @@ def test_init():
     asset = Stock("AAA US", 2.50, "USD")
     assert asset.code == "AAA US"
     assert asset.price == 2.50
-    assert asset.local_value is None
+    assert asset.local_value == 2.50
 
 
 def test_code_is_string():
