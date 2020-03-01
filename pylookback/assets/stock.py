@@ -2,8 +2,6 @@ from .asset import Asset
 
 
 class Stock(Asset):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     def revalue(self):
-        pass
+        self._local_value = self._price
