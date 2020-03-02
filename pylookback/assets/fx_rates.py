@@ -9,6 +9,30 @@ from ..observable import Observable
 from ..descriptors import StringOfFixedSize, UnsignedReal
 
 
+def validate_pair(currency_pair):
+    if not isinstance(currency_pair, str):
+        raise TypeError("expected str")
+    currency_pair = currency_pair.strip()
+    if len(currency_pair) != 6:
+        raise ValueError("expected a 6 character code")
+
+
+def is_equivalent_pair(currency_pair):
+    """ Returns True where we expect the rate to be static.
+        For example, AUDAUD = 1.0, USDUSD = 1.0
+    >>> is_equivalent_pair("AUDAUD")
+    True
+    >>> is_equivalent_pair("AUDUSD")
+    False
+    """
+    validate_pair(currency_pair)
+    ccy1 = currency_pair[:3]
+    ccy2 = currency_pair[3:]
+    if ccy1 == ccy2:
+        return True
+    return False
+
+
 class FxRate(Observable):
     """ Keep track of fx rates to value assets in different currencies. """
 
@@ -22,7 +46,7 @@ class FxRate(Observable):
         super().__init__()
         if not isinstance(currency_pair, str):
             raise TypeError("expected str")
-        currency_pair = str(currency_pair).strip().upper()
+        currency_pair = currency_pair.strip().upper()
 
         self._currency_pair = currency_pair
         self.rate = rate
@@ -46,15 +70,10 @@ class FxRate(Observable):
 
     @classmethod
     def get(cls, currency_pair):
-        if not isinstance(currency_pair, str):
-            raise TypeError("expected str")
-        if len(currency_pair) != 6:
-            raise ValueError("expected a 6 character code")
-        currency_pair = currency_pair.upper()
+        validate_pair(currency_pair)
+        currency_pair = currency_pair.strip().upper()
 
-        ccy1 = currency_pair[:3]
-        ccy2 = currency_pair[3:]
-        if ccy1 == ccy2:
+        if is_equivalent_pair(currency_pair):
             return 1.0
 
         fx = cls._instances.get(currency_pair)
