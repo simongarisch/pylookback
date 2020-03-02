@@ -2,10 +2,8 @@ from numbers import Real
 
 
 class Descriptor:
-    def __init__(self, name, **opts):
+    def __init__(self, name):
         self.name = name
-        for key, value in opts.items():
-            setattr(self, key, value)
 
     def __set__(self, instance, value):
         instance.__dict__[self.name] = value
@@ -31,7 +29,8 @@ class FixedSized(Descriptor):
     def __init__(self, name, size):
         if not isinstance(size, int):
             raise TypeError("size must be int")
-        super().__init__(name, size=size)
+        super().__init__(name)
+        self.size = size
 
     def __set__(self, instance, value):
         if len(value) != self.size:
@@ -41,6 +40,10 @@ class FixedSized(Descriptor):
 
 class String(Typed):
     expected_type = str
+
+
+class Integer(Typed):
+    expected_type = int
 
 
 class UnsignedReal(Typed, Unsigned):
