@@ -1,4 +1,4 @@
-from pylookback.assets.observable import Observable
+from pylookback.observable import Observable
 
 
 class Observer:
