@@ -33,3 +33,38 @@ def test_fx_rate_get():
 
     fx.rate = 0.75
     assert FxRate.get("AUDUSD") == 0.75
+
+
+def test_already_created():
+    """ Once a rate is created we must not create it again.
+        We don't want multiple objects with different
+        prices representing the same asset.
+    """
+    audusd = FxRate("AUDUSD", 0.65)
+    assert audusd.rate == 0.65
+    with pytest.raises(ValueError):
+        FxRate("AUDUSD", 0.75)
+    assert audusd.rate == 0.65
+
+
+def test_observable():
+    audusd = FxRate("AUDUSD", 0.65)
+
+    class UsdCash:
+        def __init__(self):
+            self.local_value = 1.0
+            self.update_aud_value()
+
+        def update_aud_value(self):
+            rate = FxRate.get("AUDUSD")
+            self.aud_value = 1 / rate
+
+        def observable_update(self, observable):
+            self.update_aud_value()
+
+    usd_cash = UsdCash()
+    assert usd_cash.aud_value == 1 / 0.65
+    audusd.add_observer(usd_cash)
+
+    audusd.rate = 0.7
+    assert usd_cash.aud_value == 1 / 0.7

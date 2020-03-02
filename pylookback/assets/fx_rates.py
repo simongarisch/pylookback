@@ -4,12 +4,14 @@ However, portfolios may consist of assets denominated in different currencies.
 We'll need to value all assets in a chosen base currency.
 To do this we need to keep track of FX rates.
 """
-from weakref import WeakValueDictionary, WeakSet
+from weakref import WeakValueDictionary
+from ..observable import Observable
 from ..descriptors import StringOfFixedSize, UnsignedReal
 
 
-class FxRate:
+class FxRate(Observable):
     """ Keep track of fx rates to value assets in different currencies. """
+
     _instances = WeakValueDictionary()
 
     # descriptors
@@ -17,21 +19,16 @@ class FxRate:
     _rate = UnsignedReal("_rate")
 
     def __init__(self, currency_pair, rate):
-        self._observers = WeakSet()
+        super().__init__()
+        if not isinstance(currency_pair, str):
+            raise TypeError("expected str")
+        currency_pair = str(currency_pair).strip().upper()
+
         self._currency_pair = currency_pair
         self.rate = rate
+        if currency_pair in self._instances:
+            raise ValueError("%s already created" % currency_pair)
         self._instances[currency_pair] = self
-
-    def add_observer(self, observer):
-        self._observers.add(observer)
-
-    def remove_observer(self, observer):
-        self._observers.discard(observer)
-
-    def _notify_observers(self):
-        pair, rate = self._currency_pair, self._rate
-        for observer in self._observers:
-            observer.on_fx_move(pair, rate)
 
     @property
     def rate(self):
@@ -40,7 +37,7 @@ class FxRate:
     @rate.setter
     def rate(self, rate):
         self._rate = rate
-        self._notify_observers()
+        self.notify_observers()
 
     @property
     def currency_pair(self):
