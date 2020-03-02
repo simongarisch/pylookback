@@ -1,9 +1,10 @@
 from weakref import WeakSet
 from abc import ABC, abstractmethod
+from ..observable import Observable
 from ..descriptors import String, UnsignedReal, StringOfFixedSize
 
 
-class Asset(ABC):
+class Asset(ABC, Observable):
     """ Portfolios consist of holdings (units of some asset).
         All assets should have:
         - a unique code (string)
@@ -14,6 +15,7 @@ class Asset(ABC):
         Code and currency_code are static and should not change
         over the asset's life.
     """
+
     _instances = WeakSet()
 
     # descriptors
@@ -37,8 +39,10 @@ class Asset(ABC):
         self._register_asset(self)
 
     def __init__(self, code, price, currency_code):
+        super().__init__()
         self._validate_code(code)
         self._currency_code = currency_code
+        self._local_value = None
         self.price = price
 
     # code, currency_code and local value can be read but not set
@@ -65,7 +69,14 @@ class Asset(ABC):
         self._price = price
         self.revalue()
 
-    @abstractmethod
     def revalue(self):
+        """ After calling the internal revalue method take
+            the extra step of notifying observers.
+        """
+        self._revalue()
+        self.notify_observers()
+
+    @abstractmethod
+    def _revalue(self):
         """ Each concrete asset must define its own revalue method. """
         raise NotImplementedError()
