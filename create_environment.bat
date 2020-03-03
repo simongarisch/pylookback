@@ -1,4 +1,4 @@
-call activate py36
+REM call activate py36
 python -m venv env
 call "./env/Scripts/activate"
 pip install -r requirements-dev.txt
