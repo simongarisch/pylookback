@@ -68,3 +68,43 @@ def test_observable():
 
     audusd.rate = 0.7
     assert usd_cash.aud_value == 1 / 0.7
+
+
+def test_get_rate():
+    audusd = FxRate("AUDUSD", 0.5)
+    assert FxRate.get("AUDUSD") == 0.5
+    assert FxRate.get("USDAUD") == 2.0
+    audusd.rate = 0.8
+    assert FxRate.get("AUDUSD") == 0.8
+    assert FxRate.get("USDAUD") == 1.25
+
+
+def test_get_instance():
+    audusd = FxRate("AUDUSD", 0.5)
+    instance = FxRate.get_instance("AUDUSD")
+    assert audusd is instance
+
+    with pytest.raises(ValueError):
+        FxRate.get_instance("USDAUD")
+
+
+def test_get_observable_instance():
+    audusd = FxRate("AUDUSD", 0.5)
+    instance = FxRate.get_observable_instance("AUDUSD")
+    assert instance is audusd
+
+    instance = FxRate.get_observable_instance("USDAUD")
+    assert instance is audusd
+
+
+def test_inverse_pair_creation():
+    """ Once we have created AUDUSD, for example,
+        we cannot create USDAUD.
+    """
+    audusd = FxRate("AUDUSD", 0.5)
+    assert audusd.rate == 0.5
+    with pytest.raises(ValueError):
+        FxRate("AUDUSD", 0.5)
+
+    with pytest.raises(ValueError):
+        FxRate("USDAUD", 2.0)

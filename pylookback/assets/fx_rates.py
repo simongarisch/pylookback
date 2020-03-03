@@ -17,6 +17,17 @@ def validate_pair(currency_pair):
         raise ValueError("expected a 6 character code")
 
 
+def split_pair(currency_pair):
+    """ Return two individual components of the pair.
+    >>> split_pair("AUDUSD")
+    ('AUD', 'USD')
+    """
+    validate_pair(currency_pair)
+    ccy1 = currency_pair[:3]
+    ccy2 = currency_pair[3:]
+    return ccy1, ccy2
+
+
 def is_equivalent_pair(currency_pair):
     """ Returns True where we expect the rate to be static.
         For example, AUDAUD = 1.0, USDUSD = 1.0
@@ -25,12 +36,19 @@ def is_equivalent_pair(currency_pair):
     >>> is_equivalent_pair("AUDUSD")
     False
     """
-    validate_pair(currency_pair)
-    ccy1 = currency_pair[:3]
-    ccy2 = currency_pair[3:]
+    ccy1, ccy2 = split_pair(currency_pair)
     if ccy1 == ccy2:
         return True
     return False
+
+
+def get_inverse_pair(currency_pair):
+    """ Returns the inverse of some currency pair.
+    >>> get_inverse_pair("AUDUSD")
+    'USDAUD'
+    """
+    ccy1, ccy2 = split_pair(currency_pair)
+    return ccy2 + ccy1
 
 
 class FxRate(Observable):
@@ -50,8 +68,13 @@ class FxRate(Observable):
 
         self._currency_pair = currency_pair
         self.rate = rate
+
         if currency_pair in self._instances:
             raise ValueError("%s already created" % currency_pair)
+
+        inverse_pair = get_inverse_pair(currency_pair)
+        if inverse_pair in self._instances:
+            raise ValueError("%s inverse pair already created" % inverse_pair)
         self._instances[currency_pair] = self
 
     @property
@@ -77,6 +100,37 @@ class FxRate(Observable):
             return 1.0
 
         fx = cls._instances.get(currency_pair)
-        if fx is None:
-            raise ValueError("%s rate not available" % currency_pair)
-        return fx.rate
+        if fx is not None:
+            return fx.rate
+
+        inverse_pair = get_inverse_pair(currency_pair)
+        fx = cls._instances.get(inverse_pair)
+        if fx is not None:
+            return 1 / fx.rate
+
+        raise ValueError("%s rate not available" % currency_pair)
+
+    @classmethod
+    def get_instance(cls, currency_pair):
+        validate_pair(currency_pair)
+        instance = cls._instances.get(currency_pair)
+        if instance is None:
+            raise ValueError("%s instance doesn't exist" % currency_pair)
+        return instance
+
+    @classmethod
+    def get_observable_instance(cls, currency_pair):
+        """ Return an instance representing either the
+            currency pair (if available) or its inverse.
+        """
+        validate_pair(currency_pair)
+        instance = cls._instances.get(currency_pair)
+        if instance is not None:
+            return instance
+
+        inverse_pair = get_inverse_pair(currency_pair)
+        instance = cls._instances.get(inverse_pair)
+        if instance is not None:
+            return instance
+
+        raise ValueError("%s instance doesn't exist" % currency_pair)
