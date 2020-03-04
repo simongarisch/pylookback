@@ -19,3 +19,13 @@ def test_price_valid():
     with pytest.raises(ValueError):
         gbp.price = 2.0
     assert gbp.price == 1
+
+
+def test_currency_code_length():
+    with pytest.raises(ValueError):
+        Cash("GBPX")
+
+
+def test_codes_uppercase():
+    gbp = Cash("gbp")
+    assert gbp.code == "GBP"

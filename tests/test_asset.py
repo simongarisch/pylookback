@@ -11,7 +11,7 @@ def test_init():
 
 def test_code_is_string():
     with pytest.raises(TypeError):
-        Stock(110, 2.50)
+        Stock(110, 2.50, "GBP")
 
 
 def test_price_is_numeric():
@@ -48,3 +48,18 @@ def test_registered_codes():
     assert len(Asset.registered_codes()) == num_codes + 1
     del zzb
     assert len(Asset.registered_codes()) == num_codes
+
+
+def test_asset_code_exists():
+    zzb = Stock("ZZB AU", 2.50, "AUD")
+    assert zzb.code == "ZZB AU"
+    assert Asset.asset_code_exists("ZZB AU")
+    assert not Asset.asset_code_exists("ZZZ AU")
+
+
+def test_get_asset_by_code():
+    zzb = Stock("ZZB AU", 2.50, "AUD")
+    instance = Asset.get_asset_by_code("ZZB AU")
+    assert instance is zzb
+    with pytest.raises(ValueError):
+        Asset.get_asset_by_code("ZZZ")

@@ -31,6 +31,17 @@ class Asset(ABC, Observable):
     def registered_codes(cls):
         return sorted([asset.code for asset in cls._instances])
 
+    @classmethod
+    def asset_code_exists(cls, code):
+        return code in cls.registered_codes()
+
+    @classmethod
+    def get_asset_by_code(cls, code):
+        for asset in cls._instances:
+            if asset.code == code:
+                return asset
+        raise ValueError("code %s does not exist" % code)
+
     def _validate_code(self, code):
         """ Every asset must have a unique string code. """
         if code in self.registered_codes():
