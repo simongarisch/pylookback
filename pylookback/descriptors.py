@@ -6,7 +6,11 @@ class Descriptor:
         self.name = name
 
     def __set__(self, instance, value):
-        instance.__dict__[self.name] = value
+        if isinstance(value, str):
+            # make all of our descriptor strings uppercase
+            instance.__dict__[self.name] = value.upper()
+        else:
+            instance.__dict__[self.name] = value
 
 
 class Typed(Descriptor):
