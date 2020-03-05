@@ -3,7 +3,7 @@ from .asset import Asset
 from .cash import Cash
 from .fx_rates import FxRate, is_equivalent_pair
 from ..observable import Observable
-from ..descriptors import Integer, StringOfFixedSize
+from ..descriptors import SignedReal, StringOfFixedSize
 
 
 class Holding(Observable):
@@ -12,7 +12,7 @@ class Holding(Observable):
         will be valued.
     """
 
-    _units = Integer("_units")
+    _units = SignedReal("_units")
     _base_currency_code = StringOfFixedSize("_base_currency_code", size=3)
 
     def __init__(self, asset, units, base_currency_code):
@@ -107,7 +107,7 @@ class Portfolio(Asset):
 
     def trade(self, asset, units, consideration=None):
         if consideration is None:
-            consideration = asset.local_currency_value * -units
+            consideration = asset.local_value * -units
         else:
             if not isinstance(consideration, Real):
                 raise TypeError("expecting numeric consideration")
@@ -139,6 +139,13 @@ class Portfolio(Asset):
         for _, holding in self._holdings.items():
             value += holding.base_currency_value
         self._value = value
+
+    def get_holding_units(self, asset_code):
+        asset_code = str(asset_code).strip().upper()
+        for code, holding in self._holdings.items():
+            if code == asset_code:
+                return holding.units
+        return 0
 
     def __str__(self):
         return "Portfolio -> " + "\n".join(
