@@ -51,6 +51,7 @@ class Holding(Observable):
         self._local_currency_value = self._asset.local_value * self.units
         fx_rate = FxRate.get(self._currency_pair)
         self._base_currency_value = self._local_currency_value * fx_rate
+        self.notify_observers()
 
     @property
     def asset_code(self):
@@ -71,6 +72,18 @@ class Holding(Observable):
     @property
     def base_currency_value(self):
         return self._base_currency_value
+
+    def __str__(self):
+        return (
+            "Holding -> "
+            + self._asset_code
+            + ", "
+            + str(self.units)
+            + ", "
+            + self._base_currency_code
+            + ", "
+            + str(self._base_currency_value)
+        )
 
 
 class Portfolio(Asset):
@@ -128,7 +141,7 @@ class Portfolio(Asset):
         self._value = value
 
     def __str__(self):
-        return "\n".join(
+        return "Portfolio -> " + "\n".join(
             [
                 code + ": " + str(holding.units)
                 for code, holding in self._holdings.items()

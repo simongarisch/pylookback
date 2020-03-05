@@ -67,3 +67,12 @@ def test_cash_holdings_observed():
     assert portfolio.value == 1000 + 1000 / audusd.rate
     audusd.rate == 0.75
     assert portfolio.value == 1000 + 1000 / audusd.rate
+
+
+def test_stock_observed():
+    portfolio = Portfolio("AUD")
+    zzb = Stock("ZZB AU", 2.50, "AUD")
+    portfolio.transfer(zzb, 1000)
+    assert portfolio.value == 1000 * 2.50
+    zzb.price = 2
+    assert portfolio.value == 1000 * 2
