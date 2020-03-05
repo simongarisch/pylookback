@@ -52,4 +52,18 @@ def test_transfer_stock():
 
 
 def test_cash_holdings_observed():
-    pass
+    portfolio = Portfolio("AUD")
+    assert portfolio.value == 0
+
+    aud = Cash("AUD")
+    portfolio.transfer(aud, 1000)
+    assert portfolio.value == 1000
+
+    usd = Cash("USD")
+    audusd = FxRate("AUDUSD", 0.65)
+    portfolio.transfer(usd, 1000)
+    assert portfolio.value == 1000 + 1000 / audusd.rate
+    audusd.rate == 0.55
+    assert portfolio.value == 1000 + 1000 / audusd.rate
+    audusd.rate == 0.75
+    assert portfolio.value == 1000 + 1000 / audusd.rate
