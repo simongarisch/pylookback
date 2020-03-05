@@ -50,6 +50,10 @@ class Integer(Typed):
     expected_type = int
 
 
+class SignedReal(Typed):
+    expected_type = Real
+
+
 class UnsignedReal(Typed, Unsigned):
     expected_type = Real
 
