@@ -1,5 +1,6 @@
 from numbers import Real
 from .asset import Asset
+from .cash import Cash
 from .fx_rates import FxRate, is_equivalent_pair
 from ..observable import Observable
 from ..descriptors import Integer, StringOfFixedSize
@@ -11,7 +12,7 @@ class Holding(Observable):
         will be valued.
     """
 
-    units = Integer("units")
+    _units = Integer("_units")
     _base_currency_code = StringOfFixedSize("_base_currency_code", size=3)
 
     def __init__(self, asset, units, base_currency_code):
@@ -19,13 +20,21 @@ class Holding(Observable):
         if not isinstance(asset, Asset):
             raise TypeError("expected asset")
         self._asset = asset
-        self.units = units
         self._asset_code = asset.code
         self._asset_currency_code = asset.currency_code
         self._base_currency_code = base_currency_code
         self._observe_components()
         self._currency_pair = asset.currency_code + base_currency_code
         self._local_currency_value = self._base_currency_value = None
+        self.units = units
+
+    @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, units):
+        self._units = units
         self._revalue()
 
     def _observe_components(self):
@@ -85,10 +94,18 @@ class Portfolio(Asset):
 
     def trade(self, asset, units, consideration=None):
         if consideration is None:
-            consideration = asset.local_currency_value * units
+            consideration = asset.local_currency_value * -units
         else:
             if not isinstance(consideration, Real):
                 raise TypeError("expecting numeric consideration")
+
+        currency_code = asset.currency_code
+        if Asset.asset_code_exists(currency_code):
+            cash = Asset.get_asset_by_code(currency_code)
+        else:
+            cash = Cash(currency_code)
+        self._change_holdings(cash, consideration)
+        self._change_holdings(asset, units)
 
     def _change_holdings(self, asset, units):
         asset_code = asset.code
@@ -106,6 +123,14 @@ class Portfolio(Asset):
 
     def _revalue(self):
         value = 0
-        for holding in self._holdings:
+        for _, holding in self._holdings.items():
             value += holding.base_currency_value
         self._value = value
+
+    def __str__(self):
+        return "\n".join(
+            [
+                code + ": " + str(holding.units)
+                for code, holding in self._holdings.items()
+            ]
+        )
