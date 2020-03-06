@@ -9,6 +9,16 @@ class Actor(ABC):
         self.portfolio = portfolio
         self._strategy = strategy
 
+    @property
+    def portfolio(self):
+        return self._portfolio
+
+    @portfolio.setter
+    def portfolio(self, portfolio):
+        if not isinstance(portfolio, Portfolio):
+            raise TypeError("expected portfolio instance")
+        self._portfolio = portfolio
+
     def perform(self):
         self._strategy.run()
 
